@@ -1,0 +1,23 @@
+[gd_scene load_steps=4 format=3 uid="uid://he5tl6ff72fn"]
+
+[ext_resource type="Script" uid="uid://6xa3yfffoxdm" path="res://area_2d.gd" id="1_5njij"]
+[ext_resource type="Texture2D" uid="uid://c4g4sibio4r11" path="res://Sprites/Objetos/pincho1-removebg-preview.png" id="2_tb8wp"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_rj586"]
+size = Vector2(2.67432, 43.5707)
+
+[node name="Area2D" type="Area2D"]
+scale = Vector2(1.5, 1.5)
+script = ExtResource("1_5njij")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(109.333, -6.83336)
+scale = Vector2(0.933862, 0.867816)
+texture = ExtResource("2_tb8wp")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(98.2458, -0.532379)
+rotation = 0.471239
+shape = SubResource("RectangleShape2D_rj586")
+
+[connection signal="body_entered" from="." to="." method="_on_area_2d_body_entered"]

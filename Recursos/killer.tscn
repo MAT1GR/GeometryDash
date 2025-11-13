@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://cloyekvhluhu3"]
+
+[ext_resource type="Script" uid="uid://6xa3yfffoxdm" path="res://area_2d.gd" id="1_tj6hx"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_rj586"]
+size = Vector2(2.39865, 43.5707)
+
+[node name="Killer" type="Area2D"]
+scale = Vector2(1.5, 1.5)
+script = ExtResource("1_tj6hx")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(106, 8.66664)
+shape = SubResource("RectangleShape2D_rj586")
+
+[connection signal="body_entered" from="." to="." method="_on_area_2d_body_entered"]

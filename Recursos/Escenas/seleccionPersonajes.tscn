@@ -1,0 +1,133 @@
+[gd_scene load_steps=13 format=3 uid="uid://dewa6bi3v6f6a"]
+
+[ext_resource type="Texture2D" uid="uid://cbq5iuwaqgm36" path="res://Sprites/Pantallas/selector.png" id="1_7wt6m"]
+[ext_resource type="Script" uid="uid://cv3ycca2fls2j" path="res://Recursos/Escenas/seleccion_personajes.gd" id="1_pg8er"]
+[ext_resource type="Texture2D" uid="uid://guprkiihf6xl" path="res://Sprites/Skins/jeffplayer1.png" id="2_prcpf"]
+[ext_resource type="Texture2D" uid="uid://c8c65vl5730kx" path="res://Sprites/Skins/jeffplayer2.png" id="3_uvsst"]
+[ext_resource type="Texture2D" uid="uid://dwb11vtt4snho" path="res://Sprites/Skins/jeffplayer3.png" id="4_2po4p"]
+[ext_resource type="Texture2D" uid="uid://bttcmyrqqrfxf" path="res://Sprites/Skins/jeffplayer4.png" id="5_pg8er"]
+[ext_resource type="Texture2D" uid="uid://cuvrx1fql2qsk" path="res://Sprites/Skins/jeffplayer5.png" id="6_bxh3e"]
+[ext_resource type="Texture2D" uid="uid://mbgkmxqytomb" path="res://Sprites/Skins/jeffplayer6.png" id="7_ivvbx"]
+[ext_resource type="Texture2D" uid="uid://ema2d2ovpx5c" path="res://Sprites/Skins/jeffplayer7.png" id="8_18mc0"]
+[ext_resource type="Texture2D" uid="uid://dxyeihursv6ik" path="res://Sprites/Skins/jeffplayer8.png" id="9_mmkgh"]
+[ext_resource type="Texture2D" uid="uid://bup5v334xgmoe" path="res://Sprites/Skins/jeffplayer9.png" id="10_tws60"]
+[ext_resource type="FontFile" uid="uid://duxarf5y7s5ip" path="res://Recursos/Fonts/PUSAB___.otf" id="12_pg8er"]
+
+[node name="Control" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 1.0
+offset_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_pg8er")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+self_modulate = Color(0.29219, 0.29219, 0.29219, 1)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -2.00001
+offset_right = 288.0
+offset_bottom = 164.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.8, 0.8)
+texture = ExtResource("1_7wt6m")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 21.0
+offset_top = -251.0
+offset_right = 1079.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(0.5, 0.5)
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="Player1" type="TextureButton" parent="HBoxContainer"]
+layout_mode = 2
+texture_normal = ExtResource("2_prcpf")
+texture_pressed = ExtResource("2_prcpf")
+texture_hover = ExtResource("2_prcpf")
+texture_disabled = ExtResource("2_prcpf")
+texture_focused = ExtResource("2_prcpf")
+
+[node name="Player2" type="TextureButton" parent="HBoxContainer"]
+layout_mode = 2
+texture_normal = ExtResource("3_uvsst")
+
+[node name="Player3" type="TextureButton" parent="HBoxContainer"]
+layout_mode = 2
+texture_normal = ExtResource("4_2po4p")
+
+[node name="Player4" type="TextureButton" parent="HBoxContainer"]
+layout_mode = 2
+texture_normal = ExtResource("5_pg8er")
+
+[node name="Player5" type="TextureButton" parent="HBoxContainer"]
+layout_mode = 2
+texture_normal = ExtResource("6_bxh3e")
+
+[node name="Player6" type="TextureButton" parent="HBoxContainer"]
+layout_mode = 2
+texture_normal = ExtResource("7_ivvbx")
+
+[node name="Player7" type="TextureButton" parent="HBoxContainer"]
+layout_mode = 2
+texture_normal = ExtResource("8_18mc0")
+
+[node name="Player8" type="TextureButton" parent="HBoxContainer"]
+layout_mode = 2
+texture_normal = ExtResource("9_mmkgh")
+
+[node name="Player9" type="TextureButton" parent="HBoxContainer"]
+layout_mode = 2
+texture_normal = ExtResource("10_tws60")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(802.68, 252)
+scale = Vector2(0.701947, 0.692982)
+texture = ExtResource("2_prcpf")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -164.0
+offset_top = -99.0
+offset_right = 168.0
+offset_bottom = -34.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 30
+
+[node name="Jugar" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("12_pg8er")
+theme_override_font_sizes/font_size = 58
+text = "Jugar"
+flat = true
+
+[connection signal="pressed" from="HBoxContainer/Player1" to="." method="_on_player_1_pressed"]
+[connection signal="pressed" from="HBoxContainer/Player2" to="." method="_on_player_2_pressed"]
+[connection signal="pressed" from="HBoxContainer/Player3" to="." method="_on_player_3_pressed"]
+[connection signal="pressed" from="HBoxContainer/Player4" to="." method="_on_player_4_pressed"]
+[connection signal="pressed" from="HBoxContainer/Player5" to="." method="_on_player_5_pressed"]
+[connection signal="pressed" from="HBoxContainer/Player6" to="." method="_on_player_6_pressed"]
+[connection signal="pressed" from="HBoxContainer/Player7" to="." method="_on_player_7_pressed"]
+[connection signal="pressed" from="HBoxContainer/Player8" to="." method="_on_player_8_pressed"]
+[connection signal="pressed" from="HBoxContainer/Player9" to="." method="_on_player_9_pressed"]
+[connection signal="pressed" from="VBoxContainer/Jugar" to="." method="_on_jugar_pressed"]

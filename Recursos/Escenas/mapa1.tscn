@@ -1,0 +1,158 @@
+[gd_scene load_steps=14 format=3 uid="uid://dbt3barlsoj2d"]
+
+[ext_resource type="Script" uid="uid://ckv20awxn3jcg" path="res://player.gd" id="1_h2whb"]
+[ext_resource type="Texture2D" uid="uid://guprkiihf6xl" path="res://Sprites/Skins/jeffplayer1.png" id="2_xch85"]
+[ext_resource type="Texture2D" uid="uid://cqhrfp40uofqq" path="res://Sprites/Objetos/fondo.png" id="3_nb0hb"]
+[ext_resource type="Texture2D" uid="uid://ddsbpom7ph2rw" path="res://Sprites/Objetos/flor.png" id="4_4gcr0"]
+[ext_resource type="Script" uid="uid://6xa3yfffoxdm" path="res://area_2d.gd" id="5_nklx8"]
+[ext_resource type="PackedScene" uid="uid://he5tl6ff72fn" path="res://Recursos/trampa.tscn" id="6_lywvn"]
+[ext_resource type="PackedScene" uid="uid://8j5a4htljw7e" path="res://Recursos/bloques.tscn" id="7_0661a"]
+[ext_resource type="PackedScene" uid="uid://cloyekvhluhu3" path="res://Recursos/killer.tscn" id="8_m6qv3"]
+[ext_resource type="FontFile" uid="uid://duxarf5y7s5ip" path="res://Recursos/Fonts/PUSAB___.otf" id="9_0mu2t"]
+[ext_resource type="Script" uid="uid://8atvquoihlcv" path="res://Recursos/Escenas/label.gd" id="10_sqmes"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_kdubu"]
+size = Vector2(63, 58)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_0hol4"]
+size = Vector2(2148, 8.09989)
+
+[sub_resource type="LabelSettings" id="LabelSettings_4lkqq"]
+font = ExtResource("9_0mu2t")
+font_size = 45
+font_color = Color(0.138034, 0.138034, 0.138034, 1)
+outline_size = 13
+
+[node name="Node2D" type="Node2D"]
+
+[node name="Player" type="CharacterBody2D" parent="." groups=["player"]]
+position = Vector2(-140, 500)
+script = ExtResource("1_h2whb")
+
+[node name="Sprite2D" type="Sprite2D" parent="Player"]
+position = Vector2(0, -2.26498e-06)
+scale = Vector2(0.28, 0.254386)
+texture = ExtResource("2_xch85")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
+shape = SubResource("RectangleShape2D_kdubu")
+
+[node name="Camera2D" type="Camera2D" parent="Player"]
+zoom = Vector2(0.6, 0.6)
+limit_bottom = 550
+
+[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
+
+[node name="ParallaxLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_scale = Vector2(0, 0)
+
+[node name="TextureRect" type="TextureRect" parent="ParallaxBackground/ParallaxLayer"]
+offset_top = -3.0
+offset_right = 1920.0
+offset_bottom = 1077.0
+mouse_filter = 2
+texture = ExtResource("3_nb0hb")
+expand_mode = 1
+stretch_mode = 1
+metadata/_edit_use_anchors_ = true
+
+[node name="Piso" type="StaticBody2D" parent="."]
+position = Vector2(709, 981)
+scale = Vector2(5, 5)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Piso"]
+position = Vector2(858, -86.2497)
+shape = SubResource("RectangleShape2D_0hol4")
+
+[node name="Sprite2D" type="Sprite2D" parent="Piso"]
+position = Vector2(785.198, -86.4)
+scale = Vector2(1.19479, 0.08)
+texture = ExtResource("4_4gcr0")
+
+[node name="Area2D2" type="Area2D" parent="."]
+position = Vector2(1106, 502)
+scale = Vector2(1.5, 1.5)
+script = ExtResource("5_nklx8")
+
+[node name="Area2D3" type="Area2D" parent="."]
+position = Vector2(1170, 502)
+scale = Vector2(1.5, 1.5)
+script = ExtResource("5_nklx8")
+
+[node name="Area2D6" parent="." instance=ExtResource("6_lywvn")]
+position = Vector2(916, 502)
+
+[node name="Area2D7" parent="." instance=ExtResource("6_lywvn")]
+position = Vector2(853, 502)
+
+[node name="Bloques3" parent="." instance=ExtResource("7_0661a")]
+position = Vector2(1536, -257)
+
+[node name="Killer3" parent="." instance=ExtResource("8_m6qv3")]
+position = Vector2(2298, 226)
+
+[node name="Area2D8" parent="." instance=ExtResource("6_lywvn")]
+position = Vector2(2650, 299)
+rotation = 3.14159
+
+[node name="Killer4" parent="." instance=ExtResource("8_m6qv3")]
+position = Vector2(2326, 363)
+rotation = -0.488692
+
+[node name="Area2D9" parent="." instance=ExtResource("6_lywvn")]
+position = Vector2(2318, 502)
+
+[node name="Bloques6" parent="." instance=ExtResource("7_0661a")]
+position = Vector2(2856, -258)
+
+[node name="Killer9" parent="." instance=ExtResource("8_m6qv3")]
+position = Vector2(3618, 226)
+
+[node name="Area2D13" parent="." instance=ExtResource("6_lywvn")]
+position = Vector2(3970, 298)
+rotation = 3.14159
+
+[node name="Killer10" parent="." instance=ExtResource("8_m6qv3")]
+position = Vector2(3646, 362)
+rotation = -0.488692
+
+[node name="Area2D14" parent="." instance=ExtResource("6_lywvn")]
+position = Vector2(3638, 501)
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+offset_top = 271.0
+offset_right = 359.0
+offset_bottom = 331.0
+
+[node name="Label" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+text = "Has muerto:"
+label_settings = SubResource("LabelSettings_4lkqq")
+script = ExtResource("10_sqmes")
+
+[node name="Bloques7" parent="." instance=ExtResource("7_0661a")]
+position = Vector2(3789, 1)
+
+[node name="Killer11" parent="." instance=ExtResource("8_m6qv3")]
+position = Vector2(4551, 493)
+
+[node name="Bloques8" parent="." instance=ExtResource("7_0661a")]
+position = Vector2(4022, -89)
+
+[node name="Killer12" parent="." instance=ExtResource("8_m6qv3")]
+position = Vector2(4783, 403)
+
+[node name="Bloques9" parent="." instance=ExtResource("7_0661a")]
+position = Vector2(4260, -157)
+
+[node name="Killer13" parent="." instance=ExtResource("8_m6qv3")]
+position = Vector2(5022, 335)
+
+[node name="Bloques10" parent="." instance=ExtResource("7_0661a")]
+position = Vector2(4523, -239)
+
+[node name="Killer14" parent="." instance=ExtResource("8_m6qv3")]
+position = Vector2(5285, 252)
+
+[connection signal="body_entered" from="Area2D2" to="Area2D2" method="_on_area_2d_body_entered"]
+[connection signal="body_entered" from="Area2D3" to="Area2D3" method="_on_area_2d_body_entered"]

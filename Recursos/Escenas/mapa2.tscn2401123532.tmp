@@ -1,0 +1,368 @@
+[gd_scene load_steps=20 format=3 uid="uid://dbyj32uf50g5w"]
+
+[ext_resource type="Script" uid="uid://ckv20awxn3jcg" path="res://player.gd" id="1_qrrdg"]
+[ext_resource type="Texture2D" uid="uid://guprkiihf6xl" path="res://Sprites/Skins/jeffplayer1.png" id="2_ltpnu"]
+[ext_resource type="Texture2D" uid="uid://dorsyaylbhici" path="res://Sprites/Objetos/fondo2.jpg" id="3_duowl"]
+[ext_resource type="Texture2D" uid="uid://ddsbpom7ph2rw" path="res://Sprites/Objetos/flor.png" id="4_j6do0"]
+[ext_resource type="PackedScene" uid="uid://8j5a4htljw7e" path="res://Recursos/bloques.tscn" id="5_wjyeo"]
+[ext_resource type="PackedScene" uid="uid://he5tl6ff72fn" path="res://Recursos/trampa.tscn" id="6_nddth"]
+[ext_resource type="Script" uid="uid://6xa3yfffoxdm" path="res://area_2d.gd" id="7_hqpx4"]
+[ext_resource type="Texture2D" uid="uid://c4g4sibio4r11" path="res://Sprites/Objetos/pincho1-removebg-preview.png" id="8_lth7v"]
+[ext_resource type="PackedScene" uid="uid://cloyekvhluhu3" path="res://Recursos/killer.tscn" id="9_5owxd"]
+[ext_resource type="FontFile" uid="uid://duxarf5y7s5ip" path="res://Recursos/Fonts/PUSAB___.otf" id="10_ec5ny"]
+[ext_resource type="Script" uid="uid://8atvquoihlcv" path="res://Recursos/Escenas/label.gd" id="11_58nub"]
+[ext_resource type="Script" uid="uid://chrysupincacc" path="res://Recursos/Escenas/impulso.gd" id="12_ltpnu"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_sgw0g"]
+size = Vector2(63, 58)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2e6nr"]
+size = Vector2(2166, 8.09989)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xm316"]
+size = Vector2(2.39865, 43.5707)
+
+[sub_resource type="GDScript" id="GDScript_c2axw"]
+script/source = "extends CollisionShape2D
+"
+
+[sub_resource type="LabelSettings" id="LabelSettings_pr5ki"]
+font = ExtResource("10_ec5ny")
+font_size = 45
+font_color = Color(0.138034, 0.138034, 0.138034, 1)
+outline_size = 13
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_qrrdg"]
+radius = 63.2851
+
+[sub_resource type="GDScript" id="GDScript_duowl"]
+script/source = "extends Area2D
+
+@export var player : CharacterBody2D  # Asigna el jugador en el editor de Godot
+
+# Este método se ejecuta cuando el área detecta un cuerpo entrando en su área
+
+func _on_body_entered(body: Node2D) -> void:
+	if body.is_in_group(\"player\"):  # Verificamos si el cuerpo es el jugador
+		body.increase_jump()  # Aumentamos el salto del jugador
+
+
+func _on_body_exited(body: Node2D) -> void:
+	if body.is_in_group(\"player\"):  # Verificamos si el cuerpo es el jugador
+		body.restore_jump()  # Restauramos el salto del jugador
+"
+
+[node name="Node2D" type="Node2D"]
+
+[node name="Player" type="CharacterBody2D" parent="." groups=["player"]]
+position = Vector2(-140, 500)
+script = ExtResource("1_qrrdg")
+
+[node name="Sprite2D" type="Sprite2D" parent="Player"]
+position = Vector2(0, -2.26498e-06)
+scale = Vector2(0.28, 0.254386)
+texture = ExtResource("2_ltpnu")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
+shape = SubResource("RectangleShape2D_sgw0g")
+
+[node name="Camera2D" type="Camera2D" parent="Player"]
+zoom = Vector2(0.6, 0.6)
+limit_bottom = 550
+
+[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
+
+[node name="ParallaxLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_scale = Vector2(0, 0)
+
+[node name="TextureRect" type="TextureRect" parent="ParallaxBackground/ParallaxLayer"]
+offset_top = -3.0
+offset_right = 1920.0
+offset_bottom = 1077.0
+texture = ExtResource("3_duowl")
+expand_mode = 1
+metadata/_edit_use_anchors_ = true
+
+[node name="Piso" type="StaticBody2D" parent="."]
+position = Vector2(709, 981)
+scale = Vector2(5, 5)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Piso"]
+position = Vector2(867, -86.2498)
+scale = Vector2(1, 1)
+shape = SubResource("RectangleShape2D_2e6nr")
+
+[node name="Sprite2D" type="Sprite2D" parent="Piso"]
+position = Vector2(785.198, -86.4)
+scale = Vector2(1.19479, 0.08)
+texture = ExtResource("4_j6do0")
+
+[node name="Bloques" parent="." instance=ExtResource("5_wjyeo")]
+
+[node name="Area2D" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(1042, 502)
+
+[node name="Area2D2" type="Area2D" parent="."]
+position = Vector2(1106, 502)
+scale = Vector2(1.5, 1.5)
+script = ExtResource("7_hqpx4")
+
+[node name="Sprite2D" type="Sprite2D" parent="Area2D2"]
+position = Vector2(109.333, -6.83336)
+scale = Vector2(0.933862, 0.867816)
+texture = ExtResource("8_lth7v")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D2"]
+position = Vector2(98.5256, -0.389832)
+rotation = 0.471239
+shape = SubResource("RectangleShape2D_xm316")
+script = SubResource("GDScript_c2axw")
+
+[node name="Area2D3" type="Area2D" parent="."]
+position = Vector2(1170, 502)
+scale = Vector2(1.5, 1.5)
+script = ExtResource("7_hqpx4")
+
+[node name="Area2D5" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(979, 502)
+
+[node name="Area2D6" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(916, 502)
+
+[node name="Area2D7" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(853, 502)
+
+[node name="Killer" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(762, 492)
+
+[node name="Bloques3" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(1411, -255)
+
+[node name="Killer3" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(2173, 228)
+
+[node name="Area2D8" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(2525, 301)
+rotation = 3.14159
+
+[node name="Killer4" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(2201, 365)
+rotation = -0.488692
+
+[node name="Area2D9" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(2193, 504)
+
+[node name="Bloques4" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(4881, -564)
+
+[node name="Killer5" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(5643, -79)
+
+[node name="Area2D10" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5995, -6)
+rotation = 3.14159
+
+[node name="Killer6" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(5671, 58)
+rotation = -0.488692
+
+[node name="Bloques5" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(2513, -257)
+
+[node name="Killer7" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(3275, 227)
+
+[node name="Area2D11" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(3627, 299)
+rotation = 3.14159
+
+[node name="Killer8" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(3303, 363)
+rotation = -0.488692
+
+[node name="Area2D12" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(3295, 502)
+
+[node name="Bloques6" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(2844, -256)
+
+[node name="Killer9" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(3606, 228)
+
+[node name="Area2D13" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(3958, 300)
+rotation = 3.14159
+
+[node name="Killer10" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(3634, 364)
+rotation = -0.488692
+
+[node name="Area2D14" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(3626, 503)
+
+[node name="Bloques7" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(3789, 1)
+
+[node name="Killer11" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(4551, 504)
+
+[node name="Bloques8" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(4022, -89)
+
+[node name="Killer12" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(4783, 403)
+
+[node name="Bloques9" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(4260, -157)
+
+[node name="Killer13" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(5022, 335)
+
+[node name="Bloques10" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(4523, -239)
+
+[node name="Killer14" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(5285, 252)
+
+[node name="Bloques11" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(4768, -323)
+
+[node name="Killer15" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(5530, 169)
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+offset_top = 271.0
+offset_right = 359.0
+offset_bottom = 331.0
+
+[node name="Label" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+text = "Has muerto:"
+label_settings = SubResource("LabelSettings_pr5ki")
+script = ExtResource("11_58nub")
+
+[node name="Area2D15" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(4640, 502)
+
+[node name="Area2D16" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(4702, 502)
+
+[node name="Area2D17" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(4763, 502)
+
+[node name="Area2D18" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(4826, 502)
+
+[node name="Area2D19" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(4888, 502)
+
+[node name="Area2D20" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(4949, 502)
+
+[node name="Area2D21" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5010, 502)
+
+[node name="Area2D22" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5072, 502)
+
+[node name="Area2D23" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5133, 502)
+
+[node name="Area2D24" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5194, 502)
+
+[node name="Area2D25" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5256, 502)
+
+[node name="Area2D26" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5317, 502)
+
+[node name="Area2D27" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5380, 501)
+
+[node name="Area2D28" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5442, 501)
+
+[node name="Area2D29" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5503, 501)
+
+[node name="Area2D30" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5566, 501)
+
+[node name="Area2D31" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5628, 501)
+
+[node name="Area2D32" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5689, 501)
+
+[node name="Area2D33" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(4640, 502)
+
+[node name="Area2D34" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(4702, 505)
+
+[node name="Area2D35" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(4763, 502)
+
+[node name="Area2D36" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5749, 501)
+
+[node name="Area2D37" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5811, 501)
+
+[node name="Area2D38" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5872, 501)
+
+[node name="Area2D39" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(2548, 503)
+
+[node name="Area2D40" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(2922, 502)
+
+[node name="Area2D41" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(2490, 502)
+
+[node name="Area2D42" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(2984, 502)
+
+[node name="Area2D43" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(6843, 418)
+rotation = 3.14159
+
+[node name="Area2D44" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(6903, 418)
+rotation = 3.14159
+
+[node name="Area2D45" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(6965, 418)
+rotation = 3.14159
+
+[node name="Area2D46" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(7025, 418)
+rotation = 3.14159
+
+[node name="Bloques2" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(5728, -138)
+
+[node name="Bloques12" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(5790, -138)
+
+[node name="Bloques13" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(5851, -138)
+
+[node name="Bloques14" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(5913, -138)
+
+[node name="Impulso" type="Area2D" parent="."]
+script = ExtResource("12_ltpnu")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Impulso"]
+position = Vector2(7604, 448)
+shape = SubResource("CircleShape2D_qrrdg")
+script = SubResource("GDScript_duowl")
+
+[connection signal="child_entered_tree" from="Player" to="Impulso/CollisionShape2D" method="_on_player_child_entered_tree"]
+[connection signal="body_entered" from="Area2D2" to="Area2D2" method="_on_area_2d_body_entered"]
+[connection signal="body_entered" from="Area2D3" to="Area2D3" method="_on_area_2d_body_entered"]
+[connection signal="body_entered" from="Impulso" to="Impulso" method="_on_body_entered"]
+[connection signal="body_exited" from="Impulso" to="Impulso" method="_on_body_exited"]

@@ -1,0 +1,616 @@
+[gd_scene load_steps=23 format=3 uid="uid://dbyj32uf50g5w"]
+
+[ext_resource type="Script" uid="uid://bvp6dtqtnreca" path="res://Recursos/Escenas/mapa_2.gd" id="1_j6do0"]
+[ext_resource type="Script" uid="uid://ckv20awxn3jcg" path="res://player.gd" id="1_qrrdg"]
+[ext_resource type="Texture2D" uid="uid://guprkiihf6xl" path="res://Sprites/Skins/jeffplayer1.png" id="2_ltpnu"]
+[ext_resource type="Texture2D" uid="uid://dorsyaylbhici" path="res://Sprites/Objetos/fondo2.jpg" id="3_duowl"]
+[ext_resource type="Texture2D" uid="uid://ddsbpom7ph2rw" path="res://Sprites/Objetos/flor.png" id="4_j6do0"]
+[ext_resource type="PackedScene" uid="uid://8j5a4htljw7e" path="res://Recursos/bloques.tscn" id="5_wjyeo"]
+[ext_resource type="PackedScene" uid="uid://he5tl6ff72fn" path="res://Recursos/trampa.tscn" id="6_nddth"]
+[ext_resource type="Script" uid="uid://6xa3yfffoxdm" path="res://area_2d.gd" id="7_hqpx4"]
+[ext_resource type="Texture2D" uid="uid://c4g4sibio4r11" path="res://Sprites/Objetos/pincho1-removebg-preview.png" id="8_lth7v"]
+[ext_resource type="PackedScene" uid="uid://cloyekvhluhu3" path="res://Recursos/killer.tscn" id="9_5owxd"]
+[ext_resource type="FontFile" uid="uid://duxarf5y7s5ip" path="res://Recursos/Fonts/PUSAB___.otf" id="10_ec5ny"]
+[ext_resource type="Script" uid="uid://8atvquoihlcv" path="res://Recursos/Escenas/label.gd" id="11_58nub"]
+[ext_resource type="Script" uid="uid://b025ntvwodtqc" path="res://Recursos/Escenas/final.gd" id="12_duowl"]
+[ext_resource type="Texture2D" uid="uid://dhhpsjna54mmj" path="res://Sprites/Objetos/final.png" id="13_j6do0"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_sgw0g"]
+size = Vector2(63, 58)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2e6nr"]
+size = Vector2(2166, 8.09989)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xm316"]
+size = Vector2(2.39865, 43.5707)
+
+[sub_resource type="GDScript" id="GDScript_c2axw"]
+script/source = "extends CollisionShape2D
+"
+
+[sub_resource type="LabelSettings" id="LabelSettings_pr5ki"]
+font = ExtResource("10_ec5ny")
+font_size = 45
+font_color = Color(0.138034, 0.138034, 0.138034, 1)
+outline_size = 13
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wjyeo"]
+size = Vector2(240, 500)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_j6do0"]
+bg_color = Color(0.904488, 0.342289, 0.791914, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wjyeo"]
+bg_color = Color(0.730345, 0.580936, 1.54018e-06, 1)
+
+[node name="Node2D" type="Node2D"]
+script = ExtResource("1_j6do0")
+
+[node name="Player" type="CharacterBody2D" parent="." groups=["player"]]
+position = Vector2(-145, 500)
+script = ExtResource("1_qrrdg")
+
+[node name="Sprite2D" type="Sprite2D" parent="Player"]
+position = Vector2(0, -2.26498e-06)
+scale = Vector2(0.28, 0.254386)
+texture = ExtResource("2_ltpnu")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
+shape = SubResource("RectangleShape2D_sgw0g")
+
+[node name="Camera2D" type="Camera2D" parent="Player"]
+zoom = Vector2(0.6, 0.6)
+limit_bottom = 550
+
+[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
+
+[node name="ParallaxLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_scale = Vector2(0, 0)
+
+[node name="TextureRect" type="TextureRect" parent="ParallaxBackground/ParallaxLayer"]
+offset_top = -3.0
+offset_right = 1920.0
+offset_bottom = 1077.0
+texture = ExtResource("3_duowl")
+expand_mode = 1
+metadata/_edit_use_anchors_ = true
+
+[node name="Piso" type="StaticBody2D" parent="."]
+position = Vector2(709, 981)
+scale = Vector2(5, 5)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Piso"]
+position = Vector2(867, -86.2498)
+shape = SubResource("RectangleShape2D_2e6nr")
+
+[node name="Sprite2D" type="Sprite2D" parent="Piso"]
+position = Vector2(785.198, -86.4)
+scale = Vector2(1.19479, 0.08)
+texture = ExtResource("4_j6do0")
+
+[node name="Bloques" parent="." instance=ExtResource("5_wjyeo")]
+
+[node name="Area2D" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(1042, 502)
+
+[node name="Area2D2" type="Area2D" parent="."]
+position = Vector2(1106, 502)
+scale = Vector2(1.5, 1.5)
+script = ExtResource("7_hqpx4")
+
+[node name="Sprite2D" type="Sprite2D" parent="Area2D2"]
+position = Vector2(109.333, -6.83336)
+scale = Vector2(0.933862, 0.867816)
+texture = ExtResource("8_lth7v")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D2"]
+position = Vector2(98.5256, -0.389832)
+rotation = 0.471239
+shape = SubResource("RectangleShape2D_xm316")
+script = SubResource("GDScript_c2axw")
+
+[node name="Area2D5" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(979, 502)
+
+[node name="Area2D6" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(916, 502)
+
+[node name="Area2D7" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(853, 502)
+
+[node name="Killer" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(762, 492)
+
+[node name="Bloques3" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(1411, -255)
+
+[node name="Killer3" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(2173, 228)
+
+[node name="Area2D8" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(2525, 301)
+rotation = 3.14159
+
+[node name="Killer4" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(2201, 365)
+rotation = -0.488692
+
+[node name="Area2D9" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(2193, 504)
+
+[node name="Bloques4" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(4881, -563)
+
+[node name="Killer5" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(5643, -79)
+
+[node name="Area2D10" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5995, -6)
+rotation = 3.14159
+
+[node name="Killer6" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(5671, 58)
+rotation = -0.488692
+
+[node name="Bloques5" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(2513, -257)
+
+[node name="Killer7" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(3275, 227)
+
+[node name="Area2D11" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(3627, 299)
+rotation = 3.14159
+
+[node name="Killer8" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(3303, 363)
+rotation = -0.488692
+
+[node name="Area2D12" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(3295, 502)
+
+[node name="Bloques6" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(2844, -256)
+
+[node name="Killer9" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(3606, 228)
+
+[node name="Area2D13" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(3958, 300)
+rotation = 3.14159
+
+[node name="Killer10" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(3634, 364)
+rotation = -0.488692
+
+[node name="Area2D14" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(3626, 503)
+
+[node name="Bloques7" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(3789, 1)
+
+[node name="Killer11" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(4551, 493)
+
+[node name="Bloques8" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(4022, -89)
+
+[node name="Killer12" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(4783, 403)
+
+[node name="Bloques9" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(4260, -157)
+
+[node name="Killer13" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(5022, 335)
+
+[node name="Bloques10" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(4523, -239)
+
+[node name="Killer14" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(5285, 252)
+
+[node name="Bloques11" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(4768, -323)
+
+[node name="Killer15" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(5530, 169)
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+offset_top = 271.0
+offset_right = 359.0
+offset_bottom = 331.0
+
+[node name="Label" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+text = "Has muerto:"
+label_settings = SubResource("LabelSettings_pr5ki")
+script = ExtResource("11_58nub")
+
+[node name="Area2D15" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(4640, 502)
+
+[node name="Area2D16" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(4702, 502)
+
+[node name="Area2D17" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(4763, 502)
+
+[node name="Area2D18" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(4826, 502)
+
+[node name="Area2D19" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(4888, 502)
+
+[node name="Area2D20" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(4949, 502)
+
+[node name="Area2D21" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5010, 502)
+
+[node name="Area2D22" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5072, 502)
+
+[node name="Area2D23" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5133, 502)
+
+[node name="Area2D24" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5194, 502)
+
+[node name="Area2D25" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5256, 502)
+
+[node name="Area2D26" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5317, 502)
+
+[node name="Area2D27" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5380, 501)
+
+[node name="Area2D28" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5442, 501)
+
+[node name="Area2D29" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5503, 501)
+
+[node name="Area2D30" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5566, 501)
+
+[node name="Area2D31" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5628, 501)
+
+[node name="Area2D32" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5689, 501)
+
+[node name="Area2D36" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5749, 501)
+
+[node name="Area2D37" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5811, 501)
+
+[node name="Area2D38" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(5872, 501)
+
+[node name="Area2D39" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(2548, 503)
+
+[node name="Area2D40" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(2922, 502)
+
+[node name="Area2D41" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(2490, 502)
+
+[node name="Area2D42" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(2984, 502)
+
+[node name="Area2D43" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(6843, 418)
+rotation = 3.14159
+
+[node name="Area2D44" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(6903, 418)
+rotation = 3.14159
+
+[node name="Area2D45" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(6965, 418)
+rotation = 3.14159
+
+[node name="Area2D46" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(7025, 418)
+rotation = 3.14159
+
+[node name="Bloques12" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(5790, -138)
+
+[node name="Bloques13" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(5851, -138)
+
+[node name="Bloques14" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(5913, -138)
+
+[node name="Area2D47" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(7223, 502)
+
+[node name="Area2D48" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(7159, 502)
+
+[node name="Bloques15" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(7026, 0)
+
+[node name="Killer16" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(7788, 492)
+
+[node name="Bloques16" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(7259, -90)
+
+[node name="Killer17" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(8020, 402)
+
+[node name="Bloques17" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(7497, -158)
+
+[node name="Killer18" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(8259, 334)
+
+[node name="Bloques18" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(7760, -240)
+
+[node name="Killer19" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(8522, 251)
+
+[node name="Bloques19" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(5728, -138)
+
+[node name="Bloques20" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(8031, -158)
+
+[node name="Killer20" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(8793, 335)
+
+[node name="Bloques21" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(8305, -240)
+
+[node name="Killer21" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(9067, 259)
+
+[node name="Bloques22" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(7971, -428)
+
+[node name="Killer22" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(8733, 55)
+
+[node name="Area2D33" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(9085, 128)
+rotation = 3.14159
+
+[node name="Killer23" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(8761, 192)
+rotation = -0.488692
+
+[node name="Bloques23" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(8034, -428)
+
+[node name="Killer24" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(8796, 55)
+
+[node name="Area2D34" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(9148, 128)
+rotation = 3.14159
+
+[node name="Killer25" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(8824, 192)
+rotation = -0.488692
+
+[node name="Bloques24" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(8097, -428)
+
+[node name="Killer26" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(8859, 55)
+
+[node name="Area2D35" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(9211, 128)
+rotation = 3.14159
+
+[node name="Killer27" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(8887, 192)
+rotation = -0.488692
+
+[node name="Bloques25" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(8160, -428)
+
+[node name="Killer28" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(8922, 55)
+
+[node name="Area2D49" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(9274, 128)
+rotation = 3.14159
+
+[node name="Killer29" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(8950, 192)
+rotation = -0.488692
+
+[node name="Bloques26" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(7845, -428)
+
+[node name="Killer30" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(8607, 55)
+
+[node name="Area2D50" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(8959, 128)
+rotation = 3.14159
+
+[node name="Killer31" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(8635, 192)
+rotation = -0.488692
+
+[node name="Bloques27" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(7908, -428)
+
+[node name="Killer32" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(8670, 55)
+
+[node name="Area2D51" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(9022, 128)
+rotation = 3.14159
+
+[node name="Killer33" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(8698, 192)
+rotation = -0.488692
+
+[node name="Bloques28" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(7971, -428)
+
+[node name="Killer34" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(8733, 55)
+
+[node name="Area2D52" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(9085, 128)
+rotation = 3.14159
+
+[node name="Killer35" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(8761, 192)
+rotation = -0.488692
+
+[node name="Bloques29" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(8034, -428)
+
+[node name="Killer36" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(8796, 55)
+
+[node name="Area2D53" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(9148, 128)
+rotation = 3.14159
+
+[node name="Killer37" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(8824, 192)
+rotation = -0.488692
+
+[node name="Bloques30" parent="." instance=ExtResource("5_wjyeo")]
+position = Vector2(8223, -428)
+
+[node name="Killer38" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(8985, 55)
+
+[node name="Area2D54" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(9337, 128)
+rotation = 3.14159
+
+[node name="Killer39" parent="." instance=ExtResource("9_5owxd")]
+position = Vector2(9013, 192)
+rotation = -0.488692
+
+[node name="Area2D55" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(7876, 502)
+
+[node name="Area2D56" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(7938, 502)
+
+[node name="Area2D57" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(7999, 502)
+
+[node name="Area2D58" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(8059, 502)
+
+[node name="Area2D59" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(8121, 502)
+
+[node name="Area2D60" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(8182, 502)
+
+[node name="Area2D61" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(8244, 502)
+
+[node name="Area2D62" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(8306, 502)
+
+[node name="Area2D63" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(8367, 502)
+
+[node name="Area2D64" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(8427, 502)
+
+[node name="Area2D65" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(8489, 502)
+
+[node name="Area2D66" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(8550, 502)
+
+[node name="Area2D67" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(8611, 502)
+
+[node name="Area2D68" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(8673, 502)
+
+[node name="Area2D69" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(8734, 502)
+
+[node name="Area2D70" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(8794, 502)
+
+[node name="Area2D71" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(8856, 502)
+
+[node name="Area2D72" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(8917, 502)
+
+[node name="Area2D73" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(8980, 502)
+
+[node name="Area2D74" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(9042, 502)
+
+[node name="Area2D75" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(9103, 502)
+
+[node name="Area2D76" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(9163, 502)
+
+[node name="Area2D77" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(9225, 502)
+
+[node name="Area2D78" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(9286, 502)
+
+[node name="Area2D79" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(9348, 502)
+
+[node name="Area2D80" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(9410, 502)
+
+[node name="Area2D81" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(9471, 502)
+
+[node name="Area2D82" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(9531, 502)
+
+[node name="Area2D83" parent="." instance=ExtResource("6_nddth")]
+position = Vector2(9593, 502)
+
+[node name="Final" type="Area2D" parent="."]
+position = Vector2(10271, 32)
+script = ExtResource("12_duowl")
+
+[node name="Sprite2D" type="Sprite2D" parent="Final"]
+position = Vector2(69, 163.5)
+scale = Vector2(1, 1.338)
+texture = ExtResource("13_j6do0")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Final"]
+position = Vector2(69, 248)
+shape = SubResource("RectangleShape2D_wjyeo")
+
+[node name="CanvasGroup" type="CanvasGroup" parent="."]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="ProgressBar" type="ProgressBar" parent="CanvasLayer"]
+offset_left = 317.0
+offset_top = 11.0
+offset_right = 970.0
+offset_bottom = 46.0
+theme_override_styles/background = SubResource("StyleBoxFlat_j6do0")
+theme_override_styles/fill = SubResource("StyleBoxFlat_wjyeo")
+step = 2.0
+page = 1.0
+
+[connection signal="body_entered" from="Area2D2" to="Area2D2" method="_on_area_2d_body_entered"]
+[connection signal="body_entered" from="Final" to="Player" method="_on_final_body_entered"]
