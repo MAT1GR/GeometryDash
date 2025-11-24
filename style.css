@@ -1,0 +1,112 @@
+/* Estilos para la nueva pantalla de inicio */
+#start-screen {
+    background: linear-gradient(to top, #1a1a2a, #3a3a5a); /* Fondo de cielo nocturno */
+    overflow: hidden;
+}
+
+.chase-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 1; /* Detrás del botón */
+}
+
+/* El suelo */
+.ground {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 200%; /* Ancho doble para animar el scroll */
+    height: 50px;
+    background: repeating-linear-gradient(
+        90deg,
+        #2a2a3a,
+        #2a2a3a 20px,
+        #3a3a4a 20px,
+        #3a3a4a 40px
+    );
+    animation: move-ground 4s linear infinite;
+}
+
+@keyframes move-ground {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+}
+
+/* Personajes */
+.hero {
+    position: absolute;
+    bottom: 50px; /* Sobre el suelo */
+    left: 20%;
+    width: 30px;
+    height: 50px;
+    background-color: #00ffff; /* Color del heroe (NEON) */
+    border-radius: 5px 5px 0 0;
+    animation: run-hero 0.5s linear infinite;
+}
+
+.villain {
+    position: absolute;
+    bottom: 50px; /* Sobre el suelo */
+    left: 10%;
+    width: 40px;
+    height: 60px;
+    background-color: #ff3232; /* Color del villano (RAGE) */
+    border-radius: 5px 5px 0 0;
+    animation: run-villain 0.55s linear infinite;
+}
+
+/* Animación de correr para los personajes */
+@keyframes run-hero {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0); }
+}
+
+@keyframes run-villain {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+    100% { transform: translateY(0); }
+}
+
+/* Elementos de fondo para parallax */
+.bg-element {
+    position: absolute;
+    bottom: 50px;
+    background-color: #111;
+    opacity: 0.5;
+}
+
+.bg-element.fast {
+    width: 10px;
+    height: 40px;
+    animation: move-bg 3s linear infinite;
+}
+
+.bg-element.medium {
+    width: 30px;
+    height: 80px;
+    background-color: #1a1a1a;
+    animation: move-bg 6s linear infinite;
+}
+
+.bg-element.slow {
+    width: 50px;
+    height: 120px;
+    background-color: #242424;
+    animation: move-bg 10s linear infinite;
+}
+
+@keyframes move-bg {
+    from { left: 100%; }
+    to { left: -100px; } /* Fuera de la pantalla */
+}
+
+/* Posicion del botón de inicio */
+#start-btn, #start-screen p {
+    z-index: 2; /* Delante de la animación */
+    position: relative;
+}

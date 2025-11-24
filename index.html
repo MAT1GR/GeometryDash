@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SANJODASH</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background: #000; 
+            touch-action: none; 
+            font-family: 'Courier New', Courier, monospace;
+            cursor: none; /* Mouse oculto siempre */
+        }
+        canvas { 
+            display: block; 
+            margin: 0 auto; 
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+        }
+        
+        /* PANTALLA DE INICIO (Solo visible la primera vez por el operador) */
+        #start-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            cursor: pointer;
+        }
+        #start-btn {
+            padding: 20px 40px;
+            border: 4px solid #0ff;
+            color: #0ff;
+            font-size: 24px;
+            background: transparent;
+            text-transform: uppercase;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink { 50% { opacity: 0.5; } }
+        
+        #debug-msg {
+            position: absolute; bottom: 5px; left: 5px; color: #444; font-size: 10px; z-index: 20; pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+
+
+<div id="debug-msg">Esperando...</div>
+
+<script type="module">
+    import kaboom from "https://unpkg.com/kaboom@3000.0.1/dist/kaboom.mjs";
+
+    let audioCtx = null;
+    let isAudioInitialized = false;
+    let lastInputTime = Date.now(); // Para detectar inactividad
+
+    // --- SISTEMA DE SONIDO ---
+    const SoundSys = {
+        isPlaying: false,
+        tempo: 110,
+        nextNoteTime: 0,
+        beatCount: 0,
+        timerID: null,
+
+        init: () => {
+            if (!isAudioInitialized) {
+                try {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    isAudioInitialized = true;
+                    if(audioCtx.state === 'suspended') audioCtx.resume();
+                } catch (e) { console.warn(e); }
+            }
+        },
+
+        playTone: (freq, type, duration, vol = 0.1) => {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        },
+
+        jump: () => {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+            osc.frequency.linearRampToValueAtTime(600, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.1);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
+        },
+
+        explode: () => {
+            if (!audioCtx) return;
+            const bufferSize = audioCtx.sampleRate * 0.5;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = buffer;
+            const gain = audioCtx.createGain();
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+            noise.connect(gain);
+            gain.connect(audioCtx.destination);
+            noise.start();
+        },
+
+        victory: () => {
+            if (!audioCtx) return;
+            const now = audioCtx.currentTime;
+            const notes = [523.25, 659.25, 783.99, 1046.50]; 
+            notes.forEach((freq, i) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = "triangle"; 
+                osc.frequency.setValueAtTime(freq, now + i * 0.15);
+                gain.gain.setValueAtTime(0.1, now + i * 0.15);
+                gain.gain.linearRampToValueAtTime(0, now + i * 0.15 + 0.4);
+                osc.start(now + i * 0.15);
+                osc.stop(now + i * 0.15 + 0.4);
+            });
+        },
+
+        startMusic: () => {
+            if (SoundSys.isPlaying || !audioCtx) return;
+            SoundSys.isPlaying = true;
+            SoundSys.nextNoteTime = audioCtx.currentTime + 0.1;
+            SoundSys.beatCount = 0;
+            SoundSys.scheduler();
+        },
+
+        stopMusic: () => {
+            SoundSys.isPlaying = false;
+            clearTimeout(SoundSys.timerID);
+        },
+
+        scheduler: () => {
+            if (!SoundSys.isPlaying) return;
+            while (SoundSys.nextNoteTime < audioCtx.currentTime + 0.1) {
+                SoundSys.playBeat(SoundSys.nextNoteTime);
+                const secondsPerBeat = 60.0 / SoundSys.tempo;
+                SoundSys.nextNoteTime += 0.25 * secondsPerBeat; 
+                SoundSys.beatCount++;
+            }
+            SoundSys.timerID = setTimeout(SoundSys.scheduler, 25);
+        },
+
+        playBeat: (time) => {
+            const beat = SoundSys.beatCount % 16;
+            if (beat % 4 === 0) {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.setValueAtTime(150, time);
+                osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.5);
+                gain.gain.setValueAtTime(0.3, time);
+                gain.gain.exponentialRampToValueAtTime(0.01, time + 0.5);
+                osc.start(time);
+                osc.stop(time + 0.5);
+            }
+            if (beat % 2 !== 0) {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'square'; 
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.setValueAtTime(8000, time);
+                gain.gain.setValueAtTime(0.05, time);
+                gain.gain.exponentialRampToValueAtTime(0.01, time + 0.05);
+                osc.start(time);
+                osc.stop(time + 0.05);
+            }
+            if (beat === 0 || beat === 6 || beat === 10) {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = "sawtooth";
+                osc.frequency.value = (beat === 10) ? 90 : 60;
+                gain.gain.setValueAtTime(0.1, time);
+                gain.gain.linearRampToValueAtTime(0, time + 0.1);
+                osc.start(time);
+                osc.stop(time + 0.1);
+            }
+        }
+    };
+
+    window.initGame = function() {
+        SoundSys.init();
+        if (!window.kaboomInitialized) {
+            startGameplay();
+            window.kaboomInitialized = true;
+        }
+    };
+
+    function startGameplay() {
+        kaboom({
+            background: [10, 10, 15],
+            scale: 1,
+            touchToMouse: true,
+            debug: false,
+        });
+
+        // --- GESTIÓN DE INPUTS E INACTIVIDAD ---
+        function resetInactivity() {
+            lastInputTime = Date.now();
+        }
+        
+        // Registrar cualquier input
+        onKeyPress(resetInactivity);
+        onMousePress(resetInactivity);
+        const allButtons = ["south", "east", "north", "west", "l1", "r1", "l2", "r2", "select", "start", "mode", "dpad-up", "dpad-down", "dpad-left", "dpad-right"];
+        allButtons.forEach(b => onGamepadButtonPress(b, resetInactivity));
+
+        // Loop global de inactividad (30 segundos)
+        loop(1, () => {
+            // Solo resetear si NO estamos en el juego (estamos en menús o game over)
+            // (Función imaginaria, Kaboom no expone esto fácil, usaremos una variable global)
+            if (window.currentSceneName !== "game" && Date.now() - lastInputTime > 30000) {
+                if(window.currentSceneName !== "attract") {
+                    go("attract"); // Volver a la pantalla de título
+                }
+            }
+        });
+
+        const GameState = {
+            selectedChar: 0,
+            selectedLevel: 1,
+            score: 0 
+        };
+
+        const CHARACTERS = [
+            { name: "NEON", color: [0, 255, 255], type: "normal" },
+            { name: "RAGE", color: [255, 50, 50], type: "angry" },
+            { name: "ZEN",  color: [50, 255, 100], type: "cyclops" },
+            { name: "SOLAR", color: [255, 200, 0], type: "glasses" },
+            { name: "MECHA", color: [100, 150, 255], type: "visor" },
+            { name: "TOXIC", color: [180, 255, 0], type: "x_eyes" },
+            { name: "VOID", color: [100, 0, 180], type: "empty" },
+            { name: "GHOST", color: [200, 200, 255], type: "sad" }
+        ];
+
+        const LEVELS = [
+            { name: "PASEO", speed: 450, gravity: 2000, spawnRate: 0.8, desc: "NORMAL", duration: 30 }, 
+            { name: "RITMO", speed: 450, gravity: 2400, spawnRate: 1.0, desc: "DIFICIL", duration: 40 },
+            { name: "BIENAL", speed: 550, gravity: 2800, spawnRate: 1.3, desc: "MUY DIFICIL", duration: 50 },
+            { name: "FRENESI", speed: 680, gravity: 3200, spawnRate: 1.6, desc: "EXPERTO", duration: 60 },
+            { name: "CAOS", speed: 850, gravity: 3500, spawnRate: 2.0, desc: "IMPOSIBLE", duration: 60 }
+        ];
+
+        // --- SISTEMA DE HIGHSCORES (Local Storage) ---
+        function getHighScore(levelIndex) {
+            return localStorage.getItem(`bienal_score_${levelIndex}`) || 0;
+        }
+        
+        function saveHighScore(levelIndex, score) {
+            const current = getHighScore(levelIndex);
+            if (score > current) {
+                localStorage.setItem(`bienal_score_${levelIndex}`, score);
+                return true; // Nuevo record
+            }
+            return false;
+        }
+
+        // --- SISTEMA DE ESTADISTICAS ---
+        function getTotalGames() {
+            return parseInt(localStorage.getItem('total_games') || '0');
+        }
+
+        function incrementTotalGames() {
+            const currentGames = getTotalGames();
+            localStorage.setItem('total_games', currentGames + 1);
+        }
+
+        function drawCharacterFace(parent, type, col) {
+            const black = rgb(0,0,0);
+            if(type === 'normal') {
+                parent.add([rect(8,8), pos(-10,-5), color(black), anchor("center")]);
+                parent.add([rect(8,8), pos(10,-5), color(black), anchor("center")]);
+            } else if(type === 'angry') {
+                parent.add([rect(10,4), pos(-10,-5), rotate(30), color(black), anchor("center")]);
+                parent.add([rect(10,4), pos(10,-5), rotate(-30), color(black), anchor("center")]);
+            } else if(type === 'cyclops') {
+                parent.add([circle(12), pos(0,-5), color(255,255,255), anchor("center")]);
+                parent.add([circle(4), pos(0,-5), color(black), anchor("center")]);
+            } else if(type === 'glasses') {
+                parent.add([rect(36,12), pos(0,-5), color(black), anchor("center")]);
+            } else if(type === 'visor') {
+                parent.add([rect(30,4), pos(0,-5), color(255,50,50), anchor("center")]);
+            } else if(type === 'x_eyes') {
+                parent.add([rect(10,3), pos(-10,-5), rotate(45), color(black), anchor("center")]);
+                parent.add([rect(10,3), pos(-10,-5), rotate(-45), color(black), anchor("center")]);
+                parent.add([rect(10,3), pos(10,-5), rotate(45), color(black), anchor("center")]);
+                parent.add([rect(10,3), pos(10,-5), rotate(-45), color(black), anchor("center")]);
+            } else if(type === 'empty') {
+                parent.add([rect(10,10), pos(-10,-5), color(255,255,255), anchor("center")]);
+                parent.add([rect(10,10), pos(10,-5), color(255,255,255), anchor("center")]);
+            } else if(type === 'sad') {
+                parent.add([circle(4), pos(-10,-5), color(black), anchor("center")]);
+                parent.add([circle(4), pos(10,-5), color(black), anchor("center")]);
+                parent.add([rect(10,3), pos(0, 10), color(black), anchor("center")]);
+            }
+        }
+
+        // --- ESCENA 0: ATTRACT MODE (Pantalla de Título) ---
+                scene("attract", () => {
+                    window.currentSceneName = "attract";
+                    SoundSys.stopMusic(); 
+                    SoundSys.playTone(220, 'square', 0.15);
+        
+                    add([rect(width(), height()), color(0, 0, 0)]);
+        
+                    // --- ARCADE FILTER ENHANCEMENTS ---
+                    // 1. More prominent Scan Lines
+                    for (let y = 0; y < height(); y += 3) { // Más frecuentes y visibles
+                        add([ rect(width(), 2), pos(0, y), color(0, 0, 0), opacity(0.3), z(100) ]); // Más gruesas y opacas
+                    }
+        
+                    // 2. Film Grain / Static Noise
+                    loop(0.05, () => { // Actualiza cada 0.05 segundos para un efecto de parpadeo
+                        const grain = add([
+                            rect(width(), height()),
+                            color(randi(0, 50), randi(0, 50), randi(0, 50)), // Colores oscuros para ruido
+                            opacity(rand(0.01, 0.03)), // Muy sutil
+                            z(101) // Encima de las scanlines
+                        ]);
+                        wait(0.05, () => destroy(grain)); // Destruye el grano para que parpadee
+                    });
+                    
+        
+                    // --- Resto de los elementos de la escena (sin cambios significativos en esta parte) ---
+                    // Moving Sprites (game enemies)
+                    loop(rand(1.5, 2.5), () => {
+                        const fromLeft = chance(0.5);
+                        add([
+                            rect(40, 40),
+                            pos(fromLeft ? -40 : width() + 40, rand(80, height() - 150)),
+                            anchor("center"),
+                            color(255, 50, 0),
+                            rotate(45),
+                            move(fromLeft ? RIGHT : LEFT, rand(300, 500)),
+                            lifespan(6),
+                            z(10)
+                        ]);
+                    });
+        
+                    // Title with Color Cycling
+                    const arcadeColors = [ rgb(0, 255, 255), rgb(255, 0, 255), rgb(255, 255, 0), rgb(0, 255, 0), rgb(255, 128, 0) ];
+                    let colorIndex = 0;
+        
+                    const titleShadow = add([
+                        text("SANJODASH", { size: 80, font: "monospace", align: "center" }),
+                        pos(center().x + 4, center().y - 80 + 4),
+                        anchor("center"),
+                        color(50,50,50),
+                        z(19)
+                    ]);
+        
+                    const title = add([
+                        text("SANJODASH", { size: 80, font: "monospace", align: "center" }),
+                        pos(center().x, center().y - 80),
+                        anchor("center"),
+                        color(arcadeColors[0]),
+                        z(20)
+                    ]);
+        
+                    loop(0.4, () => {
+                        colorIndex = (colorIndex + 1) % arcadeColors.length;
+                        title.color = arcadeColors[colorIndex];
+                        titleShadow.pos.x = center().x + rand(2, 6);
+                        titleShadow.pos.y = center().y - 80 + rand(2, 6);
+                    });
+                    
+            // --- STATS DISPLAY ---
+            const totalGames = getTotalGames();
+
+            add([
+                text("PARTIDAS JUGADAS", { size: 28, font: "monospace" }),
+                pos(center().x, center().y + 20),
+                anchor("center"),
+                color(255, 255, 0),
+                z(20)
+            ]);
+
+            add([
+                text(totalGames, { size: 48, font: "monospace" }),
+                pos(center().x, center().y + 70),
+                anchor("center"),
+                color(255, 255, 255),
+                z(20)
+            ]);
+        
+                    // Press Start
+                    const pressStart = add([ text("PRESIONA CUALQUIER BOTON", { size: 24, font: "monospace" }), pos(center().x, height() - 100), anchor("center"), color(255, 255, 0), z(20) ]);
+                    pressStart.onUpdate(() => { pressStart.opacity = Math.sin(time() * 5) > 0 ? 1 : 0; });
+                    
+                    // Credits
+                    add([ text("© 2025 M.GRIGOLO B.FIGUEIRAS", { size: 14, font: "monospace" }), pos(center().x, height() - 30), anchor("center"), color(100, 100, 100), z(20) ]);
+        
+                    function start() {
+                        SoundSys.playTone(440, 'square', 0.2);
+                        go("select-char");
+                    }
+                    
+                    onKeyPress(start);
+                    onMousePress(start);
+                    allButtons.forEach(b => onGamepadButtonPress(b, start));
+                });
+        // --- ESCENA 1: SELECCIÓN DE PERSONAJE ---
+        scene("select-char", () => {
+            window.currentSceneName = "select-char";
+            SoundSys.stopMusic(); 
+            
+            add([rect(width(), height()), color(15, 15, 20)]);
+            loop(0.5, () => {
+                add([
+                    circle(rand(10, 50)),
+                    pos(rand(0, width()), height()),
+                    color(255, 255, 255),
+                    opacity(0.1),
+                    move(UP, rand(50, 150)),
+                    lifespan(3),
+                    z(-10)
+                ]);
+            });
+
+            add([text("PASO 1: ELEGIR PERSONAJE", { size: 30, font: "monospace" }), pos(center().x, 50), anchor("center"), color(0, 255, 255)]);
+
+            const previewContainer = add([pos(center()), rotate(0), anchor("center")]);
+            const previewBox = previewContainer.add([rect(100, 100), anchor("center"), color(0,0,0), outline(4, [255,255,255])]);
+            previewContainer.onUpdate(() => { previewContainer.angle = Math.sin(time() * 2) * 5; });
+            const label = add([text("", {size:30}), pos(center().x, center().y + 100), anchor("center")]);
+            add([text("<- JOSTICK ->\nBOTON PARA CONFIRMAR", {size:15, align:"center"}), pos(center().x, height()-50), anchor("center"), color(150,150,150)]);
+
+            let idx = GameState.selectedChar;
+            function update() {
+                previewBox.removeAll(); 
+                const c = CHARACTERS[idx];
+                previewBox.color = rgb(...c.color);
+                label.text = `< ${c.name} >`;
+                drawCharacterFace(previewBox, c.type, c.color);
+            }
+            update();
+            function next() { idx = (idx + 1) % CHARACTERS.length; update(); SoundSys.playTone(440, 'sine', 0.05); }
+            function prev() { idx = (idx - 1 + CHARACTERS.length) % CHARACTERS.length; update(); SoundSys.playTone(440, 'sine', 0.05); }
+            function confirm() { GameState.selectedChar = idx; SoundSys.playTone(880, 'square', 0.1); go("select-level"); }
+            onKeyPress("right", next); onKeyPress("left", prev); onKeyPress("space", confirm);
+            onGamepadButtonPress("dpad-right", next); onGamepadButtonPress("dpad-left", prev); onGamepadStick("left", (v) => { if(v.x > 0.5) next(); if(v.x < -0.5) prev(); });
+            ["south", "east", "start", "select"].forEach(b => onGamepadButtonPress(b, confirm));
+        });
+
+        // --- ESCENA 2: SELECCIÓN DE NIVEL ---
+        scene("select-level", () => {
+            window.currentSceneName = "select-level";
+            add([rect(width(), height()), color(15, 15, 20)]);
+            add([text("PASO 2: DIFICULTAD", { size: 30, font: "monospace" }), pos(center().x, 50), anchor("center"), color(255, 255, 0)]);
+            
+            const label = add([text("", {size:50}), pos(center()), anchor("center")]);
+            const desc = add([text("", {size:20, color: rgb(255,255,0)}), pos(center().x, center().y + 60), anchor("center")]);
+            
+            // Mostrar Récord
+            const recordText = add([text("RECORD: 0%", {size:20}), pos(center().x, center().y + 100), anchor("center"), color(100, 255, 100)]);
+
+            add([text("<- JOSTICK ->\nBOTON PARA CONFIRMAR", {size:15, align:"center"}), pos(center().x, height()-50), anchor("center"), color(150,150,150)]);
+            
+            let idx = GameState.selectedLevel;
+            function update() { 
+                const l = LEVELS[idx]; 
+                label.text = `< ${l.name} >`; 
+                desc.text = l.desc; 
+                const best = getHighScore(idx);
+                recordText.text = `RECORD: ${best}%`;
+            }
+            update();
+            
+            function next() { idx = (idx + 1) % LEVELS.length; update(); SoundSys.playTone(440, 'sine', 0.05); }
+            function prev() { idx = (idx - 1 + LEVELS.length) % LEVELS.length; update(); SoundSys.playTone(440, 'sine', 0.05); }
+            function confirm() { GameState.selectedLevel = idx; SoundSys.playTone(880, 'square', 0.1); go("ready"); }
+            
+            onKeyPress("right", next); onKeyPress("left", prev); onKeyPress("space", confirm);
+            onGamepadButtonPress("dpad-right", next); onGamepadButtonPress("dpad-left", prev); onGamepadStick("left", (v) => { if(v.x > 0.5) next(); if(v.x < -0.5) prev(); });
+            ["south", "east", "start", "select"].forEach(b => onGamepadButtonPress(b, confirm));
+        });
+
+        scene("ready", () => {
+            window.currentSceneName = "ready";
+            const bg = add([rect(width(), height()), color(10, 10, 20)]);
+            bg.onUpdate(() => { const v = 10 + Math.sin(time() * 8) * 5; bg.color = rgb(v, v, v + 10); });
+            loop(0.1, () => { add([rect(4, 10), pos(rand(0, width()), height()), color(rand(0, 255), rand(0, 255), 255), move(UP, rand(200, 400)), opacity(0.5), lifespan(1.5)]); });
+            const c = CHARACTERS[GameState.selectedChar]; const l = LEVELS[GameState.selectedLevel];
+            add([text("TU SELECCION", {size: 24, font:"monospace"}), pos(center().x, 40), anchor("center"), color(0, 255, 255)]);
+            const charContainer = add([pos(center().x, 100), rotate(0), anchor("center")]);
+            const charBody = charContainer.add([rect(60, 60), anchor("center"), color(c.color[0], c.color[1], c.color[2]), outline(4, [255,255,255])]);
+            drawCharacterFace(charBody, c.type, c.color);
+            charContainer.onUpdate(() => charContainer.angle += 120 * dt());
+            add([text(`${c.name}  -  ${l.name}`, {size: 28}), pos(center().x, 160), anchor("center"), color(255,255,255)]);
+            const title = add([text("¿LISTO?", { size: 80, font: "monospace" }), pos(center().x, center().y + 60), anchor("center"), color(255, 255, 0), scale(1)]);
+            title.onUpdate(() => { const s = 1 + Math.sin(time() * 15) * 0.1; title.scale = vec2(s); title.color = rgb(255, rand(200, 255), 0); });
+            const instruction = add([text("PRESIONA EL BOTON ROJO\nPARA COMENZAR", {size: 24, align: "center", font: "monospace"}), pos(center().x, height()-80), anchor("center"), color(255, 0, 100)]);
+            loop(0.2, () => { instruction.hidden = !instruction.hidden; });
+                        function startGame() { 
+                            SoundSys.playTone(600, 'square', 0.2); 
+                            incrementTotalGames();
+                            const flash = add([rect(width(), height()), color(255,255,255), z(999)]); 
+                            wait(0.1, () => { go("game"); }); 
+                        }
+            onKeyPress("space", startGame); onMousePress(startGame);
+            ["south", "east", "north", "west", "l1", "r1", "start", "select"].forEach(b => onGamepadButtonPress(b, startGame));
+        });
+
+        scene("game", () => {
+            window.currentSceneName = "game";
+            const level = LEVELS[GameState.selectedLevel];
+            const char = CHARACTERS[GameState.selectedChar];
+            setGravity(level.gravity);
+            SoundSys.tempo = 110;
+            SoundSys.startMusic();
+            let startTime = time();
+            let levelDuration = level.duration; 
+
+            add([rect(width(), height()), color(20, 20, 30), fixed(), z(-100)]);
+
+            loop(0.3, () => {
+                const type = rand(0, 3); const posX = width(); const posY = rand(0, height() - 100); const size = rand(10, 60); const speed = rand(50, 150); const col = rgb(rand(50, 150), rand(50, 150), rand(100, 200));
+                let bgObj;
+                if (type < 1) bgObj = add([rect(size, size), pos(posX, posY), color(col), opacity(0.3), move(LEFT, speed), z(-90)]);
+                else if (type < 2) bgObj = add([circle(size/2), pos(posX, posY), color(col), opacity(0.3), move(LEFT, speed), z(-90)]);
+                else bgObj = add([rect(size, size), pos(posX, posY), color(col), opacity(0.3), move(LEFT, speed), rotate(45), anchor("center"), z(-90)]);
+                bgObj.onUpdate(() => { if (bgObj.pos.x < -100) destroy(bgObj); });
+            });
+
+            add([rect(width(), 50), pos(0, height()-50), area(), body({isStatic:true}), color(50,50,50), outline(2), z(2), "ground"]);
+
+            const player = add([rect(40, 40), pos(200, height()-150), area(), body(), opacity(0), anchor("center"), z(5), "player"]);
+            const playerVisual = player.add([rect(40, 40), color(char.color[0], char.color[1], char.color[2]), outline(4, [0,0,0]), anchor("center"), rotate(0)]);
+            drawCharacterFace(playerVisual, char.type, char.color);
+
+            // --- VILLAIN CHASER ---
+            // --- VILLAIN CHASER (rediseñado para ser diferente) ---
+                        // --- VILLAIN CHASER (con cara de malo) ---
+                                    // --- VILLAIN CHASER (con cara MÁS de malo) ---
+                                    const villain = add([
+                                        pos(20, height() - 150),
+                                        rect(50, 50), 
+                                        color(150, 0, 0), // Un rojo aun mas oscuro
+                                        area(),
+                                        body(),
+                                        anchor("center"),
+                                        z(4),
+                                        "villain"
+                                    ]);
+                        
+                                    // Cuernos
+                                    villain.add([ rect(8, 12), pos(-15, -25), rotate(-15), color(50,50,50), anchor("center") ]);
+                                    villain.add([ rect(8, 12), pos(15, -25), rotate(15), color(50,50,50), anchor("center") ]);
+                                    
+                                    // Cejas mas gruesas y enojadas
+                                    villain.add([ rect(20, 8), pos(-12, -12), rotate(25), color(0,0,0), anchor("center") ]);
+                                    villain.add([ rect(20, 8), pos(12, -12), rotate(-25), color(0,0,0), anchor("center") ]);
+                        
+                                    // Ojos rojos
+                                    villain.add([ rect(8, 8), pos(-12, -2), color(255, 0, 0), anchor("center") ]);
+                                    villain.add([ rect(8, 8), pos(12, -2), color(255, 0, 0), anchor("center") ]);
+                                    
+                                    // Boca con dientes
+                                    villain.add([ rect(30, 4), pos(0, 15), color(0,0,0), anchor("center") ]); // Base de la boca
+                                    villain.add([ rect(4, 6), pos(-10, 13), color(255,255,255), anchor("center") ]); // Diente
+                                    villain.add([ rect(4, 6), pos(0, 13), color(255,255,255), anchor("center") ]); // Diente
+                                    villain.add([ rect(4, 6), pos(10, 13), color(255,255,255), anchor("center") ]); // Diente
+                                    
+                                    villain.onUpdate(() => {                // --- LÓGICA DE MOVIMIENTO "RUBBER-BAND" ---
+                const distance = player.pos.x - villain.pos.x;
+                const minDistance = 80;  // Distancia mínima, si se acerca más, frena
+                const maxDistance = 250; // Distancia máxima, si se aleja más, acelera
+                
+                let speedFactor = 0.8; // Velocidad normal
+
+                if (distance > maxDistance) {
+                    // Está muy lejos, acelera mucho para asustar
+                    speedFactor = 1.5; 
+                } else if (distance < minDistance) {
+                    // Está muy cerca, frena para dar un respiro
+                    speedFactor = 0.1;
+                }
+                
+                const targetX = player.pos.x - (minDistance + 20); // Intenta mantenerse un poco mas alla de la distancia minima
+                if (villain.pos.x < targetX) {
+                    villain.move((targetX - villain.pos.x) * speedFactor, 0);
+                }
+
+                let shouldJump = false;
+                const jumpCheckDistance = 120; // Distancia hacia adelante que "ve" el villano
+
+                // --- LÓGICA DE SALTO INDEPENDIENTE ---
+                // Itera sobre todos los obstaculos en pantalla
+                for (const obj of get("danger, platform")) {
+                    // Si el obstaculo está en frente y a una distancia critica
+                    if (obj.pos.x > villain.pos.x && obj.pos.x < villain.pos.x + jumpCheckDistance) {
+                        // Y si el obstaculo esta a una altura que requiere un salto
+                        if (obj.pos.y > height() - 150) {
+                            shouldJump = true;
+                            break; // Se encontró un obstaculo, no necesita seguir buscando
+                        }
+                    }
+                }
+                
+                // Si debe saltar y está en el suelo, salta
+                if (shouldJump && villain.isGrounded()) {
+                    villain.jump(900); // Un salto potente para pasar obstaculos
+                } 
+                // --- FALLBACK: Mímica de salto del jugador (con menor probabilidad) ---
+                else if (player.isJumping() && !shouldJump && villain.isGrounded() && chance(0.2)) {
+                    wait(0.1, () => {
+                        villain.jump(850);
+                    });
+                }
+                
+                // Si el villano se cae del mapa, la amenaza desaparece (para este intento)
+                if (villain.pos.y > height() + 100) {
+                    destroy(villain);
+                }
+            });
+
+            player.onUpdate(() => {
+                if (!player.vel) return;
+                if (player.isGrounded()) playerVisual.angle = Math.round(playerVisual.angle / 90) * 90;
+                else {
+                    if (player.vel.y < 0) playerVisual.angle += 360 * dt(); 
+                    else { const targetAngle = Math.round(playerVisual.angle / 90) * 90; playerVisual.angle = lerp(playerVisual.angle, targetAngle, 15 * dt()); }
+                }
+            });
+
+            function jump() {
+                if(player.isGrounded()) {
+                    let jumpForce = 900;
+                    if(level.gravity < 1800) jumpForce = 750;
+                    else if(level.gravity > 2500) jumpForce = 1000;
+                    player.jump(jumpForce);
+                    SoundSys.jump();
+                    shake(2);
+                }
+            }
+
+            onKeyPress("space", jump); onMousePress(jump);
+            ["south", "east", "north", "west", "l1", "r1", "start", "select"].forEach(b => onGamepadButtonPress(b, jump));
+            onGamepadButtonPress("dpad-up", jump);
+
+            let speed = level.speed;
+            function spawn() {
+                if (GameState.score >= 100) return;
+                if(speed < 1200) { speed += 5; } // Aumentar el cap de velocidad
+                
+                const pattern = randi(0, 5); // Elegir un patrón de obstáculo
+                let nextSpawnTime = rand(1.8, 2.8); // Tiempo base para el proximo spawn
+
+                // --- NUEVOS PATRONES DE OBSTACULOS ---
+
+                if (pattern === 0 && level.spawnRate > 0.8) {
+                    // Pattern 1: Escaleras
+                    const numSteps = randi(2, 4);
+                    for (let i = 0; i < numSteps; i++) {
+                        add([rect(60, 20), area(), pos(width() + i * 120, height() - 50 - i * 50), anchor("botleft"), color(0, 200, 255), outline(2), body({ isStatic: true }), move(LEFT, speed), z(3), "platform"]);
+                    }
+                    nextSpawnTime = 2.5; // Mas tiempo despues de una escalera
+                } 
+                else if (pattern === 1) {
+                    // Pattern 2: Salto Alto
+                    add([rect(50, 120), area(), pos(width(), height()-50), anchor("botleft"), color(0, 255, 255), outline(2), body({ isStatic: true }), move(LEFT, speed), z(3), "platform"]);
+                    nextSpawnTime = 1.8;
+                }
+                else if (pattern === 2 && level.spawnRate > 1.0) {
+                    // Pattern 3: Pinchos Juntos
+                    const numSpikes = randi(2, 4);
+                    for (let i = 0; i < numSpikes; i++) {
+                        add([rect(40, 40), area({ scale: 0.5 }), pos(width() + i * 50, height()-50), anchor("center"), color(255, 50, 0), outline(2), rotate(45), move(LEFT, speed), z(1), "danger"]);
+                    }
+                    nextSpawnTime = 2.0;
+                }
+                else if (pattern === 3 && level.spawnRate > 0.9) {
+                    // Pattern 4: Pincho Flotante (requiere salto corto)
+                    add([rect(50, 50), area(), pos(width(), height()-50), anchor("botleft"), color(0, 255, 255), outline(2), body({ isStatic: true }), move(LEFT, speed), z(3), "platform"]); // Plataforma para saltar
+                    add([rect(30, 30), area(), pos(width() + 100, height()-140), anchor("botleft"), color(255, 0, 0), outline(2), move(LEFT, speed), z(1), "danger"]); // Pincho flotante
+                    nextSpawnTime = 2.2;
+                }
+                else {
+                    // Pattern 5: Original (simple)
+                    if(chance(0.6)) {
+                        add([rect(50, 50), area(), pos(width(), height()-50), anchor("botleft"), color(0, 255, 255), outline(2), body({ isStatic: true }), move(LEFT, speed), z(3), "platform"]);
+                    } else {
+                        add([rect(40, 40), area({ scale: 0.5 }), pos(width(), height()-50), anchor("center"), color(255, 50, 0), outline(2), rotate(45), move(LEFT, speed), z(1), "danger"]);
+                    }
+                    nextSpawnTime = rand(1.2, 1.8);
+                }
+
+                const timer = nextSpawnTime * (450/speed) / level.spawnRate;
+                wait(timer, spawn);
+            }
+            wait(1, spawn);
+
+            function gameOver(finalScore) {
+                // Guardar récord
+                const isNewRecord = saveHighScore(GameState.selectedLevel, finalScore);
+                SoundSys.explode();
+                shake(20);
+                go("lose", finalScore, isNewRecord);
+            }
+
+            player.onCollide("platform", (obj, col) => { if (!col.isBottom()) gameOver(Math.floor(GameState.score)); });
+            player.onCollide("danger", () => gameOver(Math.floor(GameState.score)));
+            player.onCollide("villain", () => gameOver(Math.floor(GameState.score)));
+
+            // BARRA DE PROGRESO
+            const BAR_WIDTH = width() - 60;
+            const BAR_HEIGHT = 32;
+            add([rect(BAR_WIDTH, BAR_HEIGHT, { radius: 8 }), pos(30, 30), color(20, 20, 20), outline(4, [255, 255, 255]), fixed(), z(100)]);
+            const barFill = add([rect(0, BAR_HEIGHT, { radius: 8 }), pos(30, 30), color(0, 255, 0), fixed(), z(101)]);
+            const percentageText = add([text("0%", {size: 24, font:"monospace"}), pos(center().x, 30 + BAR_HEIGHT/2), anchor("center"), color(255, 255, 255), fixed(), z(102)]);
+            
+            onUpdate(() => {
+                const elapsed = time() - startTime;
+                const progress = Math.min((elapsed / levelDuration) * 100, 100);
+                GameState.score = progress;
+
+                barFill.width = BAR_WIDTH * (progress / 100);
+                percentageText.text = Math.floor(progress) + "%";
+                
+                if(progress > 80) barFill.color = rgb(0, 255, 255);
+                else if(progress > 50) barFill.color = rgb(255, 255, 0);
+                else barFill.color = rgb(0, 255, 0);
+
+                if (progress >= 100) {
+                    saveHighScore(GameState.selectedLevel, 100);
+                    go("win");
+                }
+
+                if(player.pos.y > height() || player.pos.x < -20) { 
+                    gameOver(Math.floor(progress)); 
+                }
+            });
+        });
+
+        scene("win", () => {
+            window.currentSceneName = "win";
+            SoundSys.stopMusic(); SoundSys.victory();
+            add([rect(width(), height()), color(255, 215, 0)]); 
+            loop(0.05, () => { add([rect(rand(5, 10), rand(5, 10)), pos(rand(0, width()), rand(0, height())), color(rand(0,255), rand(0,255), rand(0,255)), move(vec2(rand(-100, 100), rand(-100, 100)), rand(100, 300)), rotate(rand(0, 360)), lifespan(2)]); });
+            add([text("¡NIVEL COMPLETADO!", { size: 60, font: "monospace", align: "center" }), pos(center().x, center().y - 50), anchor("center"), color(0, 0, 0)]);
+            add([text("100%", { size: 80, font: "monospace" }), pos(center().x, center().y + 50), anchor("center"), color(255, 255, 255), outline(4, [0,0,0])]);
+            add([text("PRESIONA BOTON PARA SALIR", { size: 20 }), pos(center().x, height() - 50), anchor("center"), color(0, 0, 0)]);
+            function restart() { go("select-char"); }
+            wait(2, () => { onKeyPress("space", restart); onMousePress(restart); ["south", "east", "north", "west", "l1", "r1", "start", "select"].forEach(b => onGamepadButtonPress(b, restart)); });
+        });
+
+        scene("lose", (scoreText, isNewRecord) => {
+            window.currentSceneName = "lose";
+            SoundSys.stopMusic();
+            add([rect(width(), height()), color(0,0,0)]);
+            add([text("GAME OVER", {size:60}), pos(center().x, center().y-80), anchor("center"), color(255,0,0)]);
+            add([text("PROGRESO:", {size:24}), pos(center().x, center().y), anchor("center"), color(150,150,150)]);
+            add([text(scoreText + "%", {size:50}), pos(center().x, center().y+40), anchor("center"), color(255,255,255)]);
+            
+            if (isNewRecord) {
+                add([text("¡NUEVO RECORD!", {size:30}), pos(center().x, center().y+90), anchor("center"), color(255,255,0)]);
+            }
+            
+            add([text("PRESIONA PARA REINICIAR", {size:20}), pos(center().x, height()-50), anchor("center"), color(255,255,0)]);
+            function restart() { go("select-char"); }
+            wait(0.5, () => { onKeyPress("space", restart); onMousePress(restart); ["south", "east", "north", "west", "l1", "r1", "start", "select"].forEach(b => onGamepadButtonPress(b, restart)); });
+        });
+
+        go("attract"); // Iniciamos en modo espera
+
+        window.addEventListener("gamepadconnected", (e) => {
+            const d = document.getElementById('debug-msg');
+            d.innerText = "JOYSTICK CONECTADO: " + e.gamepad.id;
+            d.style.color = "#0f0";
+        });
+    }
+</script>
+<script>
+    window.onload = function() {
+        initGame();
+    };
+</script>
+</body>
+</html>
